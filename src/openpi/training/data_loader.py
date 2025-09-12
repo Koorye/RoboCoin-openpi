@@ -14,6 +14,7 @@ import torch
 import openpi.models.model as _model
 import openpi.training.config as _config
 from openpi.training.droid_rlds_dataset import DroidRldsDataset
+from openpi.training.lerobot_dataset_with_annotations import LeRobotDatasetWithAnnotations
 import openpi.transforms as _transforms
 
 T_co = TypeVar("T_co", covariant=True)
@@ -144,6 +145,7 @@ def create_torch_dataset(
             key: [t / dataset_meta.fps for t in range(action_horizon)] for key in data_config.action_sequence_keys
         },
     )
+    dataset = LeRobotDatasetWithAnnotations(dataset)
 
     if data_config.prompt_from_task:
         dataset = TransformedDataset(dataset, [_transforms.PromptFromLeRobotTask(dataset_meta.tasks)])

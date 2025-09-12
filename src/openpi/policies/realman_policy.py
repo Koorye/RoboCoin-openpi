@@ -49,8 +49,8 @@ class RealmanInputs(transforms.DataTransformFn):
         inputs["state"] = data["observation.state"]
         inputs["prompt"] = data["prompt"]
 
-        if "actions" in data:
-            inputs["actions"] = data["actions"]
+        if "action" in data:
+            inputs["action"] = data["action"]
 
         return inputs
 
@@ -58,4 +58,4 @@ class RealmanInputs(transforms.DataTransformFn):
 @dataclasses.dataclass(frozen=True)
 class RealmanOutputs(transforms.DataTransformFn):
     def __call__(self, data: dict) -> dict:
-        return {"actions": np.asarray(data["actions"][:, :16])}
+        return {"action": np.asarray(data["action"][:, :16])}

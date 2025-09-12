@@ -1,17 +1,21 @@
 import json
 import os
+import torch
 
 
 def get_default_lerobot_root():
     return os.path.expanduser('~/.cache/huggingface/lerobot')
 
 
-class LeRobotDatasetWithAnnotations:
+class LeRobotDatasetWithAnnotations(torch.utils.data.Dataset):
     def __init__(
         self,
         lerobot_dataset
     ):
         self.lerobot_dataset = lerobot_dataset
+    
+    def __len__(self):
+        return len(self.lerobot_dataset)
     
     def __getitem__(self, idx):
         item = self.lerobot_dataset[idx]

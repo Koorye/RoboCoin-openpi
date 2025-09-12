@@ -540,4 +540,5 @@ class DataLoaderImpl(DataLoader):
 
     def __iter__(self):
         for batch in self._data_loader:
-            yield _model.Observation.from_dict(batch), batch["actions"]
+            print(batch.keys())
+            yield _model.Observation.from_dict(batch), batch["action"]

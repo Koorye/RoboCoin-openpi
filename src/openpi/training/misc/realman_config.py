@@ -36,7 +36,7 @@ def get_realman_configs():
                             "observation.images.cam_left_wrist": "observation.images.cam_left_wrist",
                             "observation.images.cam_right_wrist": "observation.images.cam_right_wrist",
                             "observation.state": "observation.state",
-                            "actions": "action", # action -> actions
+                            "action": "action", # action -> actions
                             "prompt": "prompt",
                         }
                     )
@@ -76,7 +76,7 @@ def get_realman_configs():
             data=LeRobotRealmanDataConfig(
                 repo_id="realman/eval_v1",
                 use_delta_joint_actions=False,
-                base_config=DataConfig(prompt_from_task=True),
+                # base_config=DataConfig(prompt_from_task=True),
             ),
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
@@ -85,9 +85,9 @@ def get_realman_configs():
             name="pi0_realman_lora",
             model=pi0_config.Pi0Config(),
             data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1",
+                repo_id="realman/eval_v1_anno",
                 use_delta_joint_actions=False,
-                base_config=DataConfig(prompt_from_task=True),
+                # base_config=DataConfig(prompt_from_task=True),
             ),
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
@@ -101,7 +101,7 @@ def get_realman_configs():
             data=LeRobotRealmanDataConfig(
                 repo_id="realman/eval_v1",
                 use_delta_joint_actions=True,
-                base_config=DataConfig(prompt_from_task=True),
+                # base_config=DataConfig(prompt_from_task=True),
             ),
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
@@ -112,7 +112,7 @@ def get_realman_configs():
             data=LeRobotRealmanDataConfig(
                 repo_id="realman/eval_v1",
                 use_delta_joint_actions=True,
-                base_config=DataConfig(prompt_from_task=True),
+                # base_config=DataConfig(prompt_from_task=True),
             ),
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
@@ -124,9 +124,9 @@ def get_realman_configs():
             name="pi0_realman_lora_debug",
             model=pi0_config.Pi0Config(),
             data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1",
+                repo_id="realman/eval_v1_anno",
                 use_delta_joint_actions=False,
-                base_config=DataConfig(prompt_from_task=True),
+                # base_config=DataConfig(prompt_from_task=True),
             ),
             batch_size=1,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),

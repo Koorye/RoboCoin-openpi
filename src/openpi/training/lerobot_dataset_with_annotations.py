@@ -21,7 +21,7 @@ class LeRobotDatasetWithAnnotations(torch.utils.data.Dataset):
         item = self.lerobot_dataset[idx]
         episode_index = item['episode_index']
         frame_index = item['frame_index']
-        prompt = self._parse_annotation(episode_index, frame_index)
+        prompt = self._parse_annotation(item, episode_index, frame_index)
         item['task'] = prompt
         return item
     

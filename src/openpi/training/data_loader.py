@@ -146,9 +146,7 @@ def create_torch_dataset(
         },
         video_backend='pyav',
     )
-
-    if use_annotation:
-        dataset = LeRobotDatasetWithAnnotations(dataset)
+    dataset = LeRobotDatasetWithAnnotations(dataset)
 
     if data_config.prompt_from_task:
         dataset = TransformedDataset(dataset, [_transforms.PromptFromLeRobotTask(dataset_meta.tasks)])

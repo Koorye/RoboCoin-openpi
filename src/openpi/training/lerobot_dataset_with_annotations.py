@@ -19,10 +19,12 @@ def _extract_joint(state):
 class LeRobotDatasetWithAnnotations(torch.utils.data.Dataset):
     def __init__(
         self,
-        lerobot_dataset
+        lerobot_dataset,
+        use_annotation: bool = False,
     ):
         self.lerobot_dataset = lerobot_dataset
         self.repo_id = lerobot_dataset.repo_id
+        self.use_annotation = use_annotation
     
     def __len__(self):
         return len(self.lerobot_dataset)
@@ -38,6 +40,9 @@ class LeRobotDatasetWithAnnotations(torch.utils.data.Dataset):
         return item
     
     def _parse_annotation(self, item, episode_index, frame_index):
+        if not self.use_annotation:
+            return item['task']
+        
         annotation_path = os.path.join(_get_default_lerobot_root(), self.repo_id, 'annotations', f'episode_{episode_index:06d}.json')
         with open(annotation_path, 'r') as f:
             annotations = json.load(f)

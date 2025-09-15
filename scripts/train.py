@@ -1,8 +1,3 @@
-import jax
-jax.config.update('jax_platform_name', 'cpu')
-# lerobot dataset must be imported first to avoid error, don't know why
-import lerobot.common.datasets.lerobot_dataset as lerobot_dataset
-
 import dataclasses
 import functools
 import logging
@@ -138,6 +133,45 @@ def init_train_state(
     return train_state, state_sharding
 
 
+def _check_batch_example(batch):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import openpi.shared.download as download
+    import sentencepiece
+
+    def _as_image(img):
+        img = np.array(img)
+        # -1 ~ 1 -> 0 ~ 255
+        return (255 * (img + 1) / 2).astype(np.uint8)
+
+    observation, actions = batch
+    
+    plt.subplot(1, 4, 1)
+    plt.imshow(_as_image(observation.images['base_0_rgb'][0]))
+    plt.subplot(1, 4, 2)
+    plt.imshow(_as_image(observation.images['left_wrist_0_rgb'][0]))
+    plt.subplot(1, 4, 3)
+    plt.imshow(_as_image(observation.images['right_wrist_0_rgb'][0]))
+
+    print('Batch Example:')
+    print('state:', observation.state[0])
+    print('actions:', actions.shape)
+    print('first:', actions[0][0])
+    print('last:', actions[0][-1])
+
+    path = download.maybe_download("gs://big_vision/paligemma_tokenizer.model", gs={"token": "anon"})
+    with path.open("rb") as f:
+        _tokenizer = sentencepiece.SentencePieceProcessor(model_proto=f.read())
+    tokenized_prompt = np.array(observation.tokenized_prompt[0]).astype(int).tolist()
+    print('prompt:', _tokenizer.decode(tokenized_prompt).strip())
+
+    plt.subplot(1, 4, 4)
+    plt.plot(np.array(actions[0]))
+
+    plt.savefig('batch_example.png')
+    print('Saved batch example to batch_example.png')
+    exit()
+
 @at.typecheck
 def train_step(
     config: _config.TrainConfig,
@@ -230,42 +264,9 @@ def main(config: _config.TrainConfig):
     data_iter = iter(data_loader)
     batch = next(data_iter)
 
-    observation, actions = batch
-    print('Batch Example:')
-
-    import matplotlib.pyplot as plt
-    import numpy as np
-    def _as_image(img):
-        img = np.array(img)
-        # -1 ~ 1 -> 0 ~ 255
-        return (255 * (img + 1) / 2).astype(np.uint8)
-    
-    plt.subplot(1, 4, 1)
-    plt.imshow(_as_image(observation.images['base_0_rgb'][0]))
-    plt.subplot(1, 4, 2)
-    plt.imshow(_as_image(observation.images['left_wrist_0_rgb'][0]))
-    plt.subplot(1, 4, 3)
-    plt.imshow(_as_image(observation.images['right_wrist_0_rgb'][0]))
-
-    print('state:', observation.state[0])
-
-    import sentencepiece
-    import openpi.shared.download as download
-    path = download.maybe_download("gs://big_vision/paligemma_tokenizer.model", gs={"token": "anon"})
-    with path.open("rb") as f:
-        _tokenizer = sentencepiece.SentencePieceProcessor(model_proto=f.read())
-    tokenized_prompt = np.array(observation.tokenized_prompt[0]).astype(int).tolist()
-    print('prompt:', _tokenizer.decode(tokenized_prompt).strip())
-
-    print('actions:', actions.shape)
-    print('first:', actions[0][0])
-    print('last:', actions[0][-1])
-
-    plt.subplot(1, 4, 4)
-    plt.plot(np.array(actions[0]))
-
-    plt.show()
-    exit()
+    if config.check_only:
+        _check_batch_example(batch)
+        return
 
     logging.info(f"Initialized data loader:\n{training_utils.array_tree_to_info(batch)}")
 

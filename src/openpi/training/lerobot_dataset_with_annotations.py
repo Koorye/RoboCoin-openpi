@@ -12,7 +12,7 @@ def _extract_joint(state):
     return np.concatenate([
         state[..., 0:8],   # left joint + gripper
         state[..., 17:25], # right joint + gripper
-    ])
+    ], axis=-1)
 
 
 

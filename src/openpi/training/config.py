@@ -526,6 +526,9 @@ class TrainConfig:
     # data parallel between 2 groups of devices.
     fsdp_devices: int = 1
 
+    check_only: bool = False
+    use_annotation: bool = False
+
     @property
     def assets_dirs(self) -> pathlib.Path:
         """Get the assets directory for this config."""

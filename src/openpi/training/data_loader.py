@@ -146,7 +146,7 @@ def create_torch_dataset(
         },
         video_backend='pyav',
     )
-    
+
     dataset = LeRobotDatasetWithAnnotations(dataset, use_annotation=use_annotation)
 
     if data_config.prompt_from_task:
@@ -543,5 +543,4 @@ class DataLoaderImpl(DataLoader):
 
     def __iter__(self):
         for batch in self._data_loader:
-            print(batch.keys())
             yield _model.Observation.from_dict(batch), batch["action"]

@@ -46,8 +46,8 @@ class RealmanInputs(transforms.DataTransformFn):
             },
         }
 
-        inputs["state"] = data["observation.state"]
-        inputs["prompt"] = data["prompt"]
+        inputs["state"] = transforms.pad_to_dim(data["observation.state"], 32)
+        inputs["prompt"] = transforms.pad_to_dim(data["prompt"], 32)
 
         if "action" in data:
             inputs["action"] = data["action"]

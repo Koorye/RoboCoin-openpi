@@ -112,6 +112,8 @@ RoboCOIN OpenPI offers various preset configurations to suit different training 
     | --use-annotation | bool | Whether to use fine-grained text descriptions for training              | False          |
     | --use-indices  | List[Tuple(int, int)] | Specify the data index range to use, formatted as "[(start1,end1),(start2,end2)]" or None, where None means to use all data | None |
 
+   *💡Tip: It is recommended to use --check-only to check the configuration before training to ensure that the images, annotations, and action information are correct.*
+
 3. Model Inference
     ```bash
     uv run scripts/serve_policy.py policy:checkpoint \

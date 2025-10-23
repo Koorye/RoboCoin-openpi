@@ -137,7 +137,9 @@ def get_robocoin_configs():
         # Pi0 LoRA w/ RoboCOIN (debug)
         TrainConfig(
             name="pi0_robocoin_lora_debug",
-            model=pi0_config.Pi0Config(),
+            model=pi0_config.Pi0Config(
+                paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
+            ),
             data=LeRobotRoboCOINDataConfig(
                 repo_id="robocoin/repo",
                 delta_action_mask=None,

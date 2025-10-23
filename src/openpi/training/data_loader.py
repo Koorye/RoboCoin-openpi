@@ -129,7 +129,7 @@ class FakeDataset(Dataset):
 
 
 def create_torch_dataset(
-    data_config: _config.DataConfig, action_horizon: int, model_config: _model.BaseModelConfig, use_annotation: bool = False
+    data_config: _config.DataConfig, action_horizon: int, model_config: _model.BaseModelConfig, use_annotation: bool = False, use_indices = None
 ) -> Dataset:
     """Create a dataset for training."""
     repo_id = data_config.repo_id
@@ -147,7 +147,9 @@ def create_torch_dataset(
         video_backend='pyav',
     )
 
-    dataset = LeRobotDatasetWithAnnotations(dataset, use_annotation=use_annotation)
+    if use_indices is not None:
+        use_indices = eval(use_indices)
+    dataset = LeRobotDatasetWithAnnotations(dataset, use_annotation=use_annotation, use_indices=use_indices)
 
     if data_config.prompt_from_task:
         dataset = TransformedDataset(dataset, [_transforms.PromptFromLeRobotTask(dataset_meta.tasks)])
@@ -270,6 +272,7 @@ def create_data_loader(
         skip_norm_stats=skip_norm_stats,
         framework=framework,
         use_annotation=config.use_annotation,
+        use_indices=config.use_indices,
     )
 
 
@@ -287,6 +290,7 @@ def create_torch_data_loader(
     seed: int = 0,
     framework: str = "jax",
     use_annotation: bool = False,
+    use_indices = None,
 ) -> DataLoader[tuple[_model.Observation, _model.Actions]]:
     """Create a data loader for training.
 
@@ -305,7 +309,8 @@ def create_torch_data_loader(
             execute in the main process.
         seed: The seed to use for shuffling the data.
     """
-    dataset = create_torch_dataset(data_config, action_horizon, model_config, use_annotation=use_annotation)
+    dataset = create_torch_dataset(data_config, action_horizon, model_config, 
+                                   use_annotation=use_annotation, use_indices=use_indices)
     dataset = transform_dataset(dataset, data_config, skip_norm_stats=skip_norm_stats)
 
     # Use TorchDataLoader for both frameworks

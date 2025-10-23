@@ -1,10 +1,10 @@
-"""Realman policy configs."""
+"""RoboCOIN policy configs."""
 
 import dataclasses
 import pathlib
 import tyro
 from collections.abc import Sequence
-from typing import TypeAlias
+from typing import TypeAlias, List, Optional
 from typing_extensions import override
 
 import openpi.models.model as _model
@@ -15,17 +15,17 @@ import openpi.transforms as _transforms
 ModelType: TypeAlias = _model.ModelType
 
 
-def get_realman_configs():
+def get_robocoin_configs():
     # Import here to avoid circular imports.
     from openpi.training.config import TrainConfig
     import openpi.training.weight_loaders as weight_loaders
     from ..config import DataConfigFactory, DataConfig, ModelTransformFactory
-    from ...policies import realman_policy
+    from ...policies import robocoin_policy
 
     @dataclasses.dataclass(frozen=True)
-    class LeRobotRealmanDataConfig(DataConfigFactory):
+    class LeRobotRoboCOINDataConfig(DataConfigFactory):
 
-        use_delta_joint_actions: bool = False
+        delta_action_mask: Optional[List[int]] = None
 
         repack_transforms: tyro.conf.Suppress[_transforms.Group] = dataclasses.field(
             default=_transforms.Group(
@@ -36,7 +36,7 @@ def get_realman_configs():
                             "observation.images.cam_left_wrist": "observation.images.cam_left_wrist",
                             "observation.images.cam_right_wrist": "observation.images.cam_right_wrist",
                             "observation.state": "observation.state",
-                            "action": "action", # action -> actions
+                            "action": "action",
                             "prompt": "prompt",
                         }
                     )
@@ -49,11 +49,11 @@ def get_realman_configs():
         @override
         def create(self, assets_dirs: pathlib.Path, model_config: _model.BaseModelConfig) -> DataConfig:
             data_transforms = _transforms.Group(
-                inputs=[realman_policy.RealmanInputs()],
-                outputs=[realman_policy.RealmanOutputs()],
+                inputs=[robocoin_policy.RoboCOINInputs()],
+                outputs=[robocoin_policy.RoboCOINOutputs()],
             )
-            if self.use_delta_joint_actions:
-                delta_action_mask = _transforms.make_bool_mask(7, -1, 7, -1)
+            if self.delta_action_mask is not None:
+                delta_action_mask = _transforms.make_bool_mask(*self.delta_action_mask)
                 data_transforms = data_transforms.push(
                     inputs=[_transforms.DeltaActions(delta_action_mask)],
                     outputs=[_transforms.AbsoluteActions(delta_action_mask)],
@@ -70,67 +70,82 @@ def get_realman_configs():
             )
 
     return [
+        # Pi0 w/ RoboCOIN
         TrainConfig(
-            name="pi0_realman",
+            name="pi0_robocoin",
             model=pi0_config.Pi0Config(),
-            data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1",
-                use_delta_joint_actions=False,
-                # base_config=DataConfig(prompt_from_task=True),
+            data=LeRobotRoboCOINDataConfig(
+                repo_id="robocoin/repo",
+                delta_action_mask=None,
             ),
+            batch_size=32,
+            num_workers=16,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
         ),
+        # Pi0 LoRA w/ RoboCOIN
         TrainConfig(
-            name="pi0_realman_lora",
-            model=pi0_config.Pi0Config(),
-            data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1_anno",
-                use_delta_joint_actions=False,
-                # base_config=DataConfig(prompt_from_task=True),
+            name="pi0_robocoin_lora",
+            model=pi0_config.Pi0Config(
+                paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
             ),
+            data=LeRobotRoboCOINDataConfig(
+                repo_id="robocoin/repo",
+                delta_action_mask=None,
+            ),
+            batch_size=32,
+            num_workers=16,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
             freeze_filter=pi0_config.Pi0Config(
                 paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
             ).get_freeze_filter(),
+            ema_decay=None,
         ),
+        # Pi0 w/ RoboCOIN (delta actions)
         TrainConfig(
-            name="pi0_realman_delta",
+            name="pi0_robocoin_delta",
             model=pi0_config.Pi0Config(),
-            data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1",
-                use_delta_joint_actions=True,
-                # base_config=DataConfig(prompt_from_task=True),
+            data=LeRobotRoboCOINDataConfig(
+                repo_id="robocoin/repo",
+                delta_action_mask=[7, -1, 7, -1], # 7 left arm joints, skip gripper, 7 right arm joints, skip gripper
             ),
+            batch_size=32,
+            num_workers=16,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
         ),
+        # Pi0 LoRA w/ RoboCOIN (delta actions)
         TrainConfig(
-            name="pi0_realman_lora_delta",
-            model=pi0_config.Pi0Config(),
-            data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1",
-                use_delta_joint_actions=True,
-                # base_config=DataConfig(prompt_from_task=True),
+            name="pi0_robocoin_lora_delta",
+            model=pi0_config.Pi0Config(
+                paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
             ),
+            data=LeRobotRoboCOINDataConfig(
+                repo_id="robocoin/repo",
+                delta_action_mask=[7, -1, 7, -1], # 7 left arm joints, skip gripper, 7 right arm joints, skip gripper
+            ),
+            batch_size=32,
+            num_workers=16,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
             num_train_steps=30_000,
             freeze_filter=pi0_config.Pi0Config(
                 paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
             ).get_freeze_filter(),
+            ema_decay=None,
         ),
+        # Pi0 LoRA w/ RoboCOIN (debug)
         TrainConfig(
-            name="pi0_realman_lora_debug",
+            name="pi0_robocoin_lora_debug",
             model=pi0_config.Pi0Config(),
-            data=LeRobotRealmanDataConfig(
-                repo_id="realman/eval_v1_anno",
-                use_delta_joint_actions=False,
-                # base_config=DataConfig(prompt_from_task=True),
+            data=LeRobotRoboCOINDataConfig(
+                repo_id="robocoin/repo",
+                delta_action_mask=None,
             ),
             batch_size=1,
+            num_workers=1,
             weight_loader=weight_loaders.CheckpointWeightLoader("gs://openpi-assets/checkpoints/pi0_base/params"),
-            num_train_steps=30_000,
+            num_train_steps=1_000,
             freeze_filter=pi0_config.Pi0Config(
                 paligemma_variant="gemma_2b_lora", action_expert_variant="gemma_300m_lora"
             ).get_freeze_filter(),

@@ -6,7 +6,7 @@ import dataclasses
 import difflib
 import logging
 import pathlib
-from typing import Any, Literal, Protocol, TypeAlias
+from typing import Any, Literal, Protocol, TypeAlias, List, Tuple
 
 import etils.epath as epath
 import flax.nnx as nnx
@@ -24,7 +24,7 @@ import openpi.shared.download as _download
 import openpi.shared.normalize as _normalize
 import openpi.training.droid_rlds_dataset as droid_rlds_dataset
 import openpi.training.misc.roboarena_config as roboarena_config
-import openpi.training.misc.realman_config as realman_config
+import openpi.training.misc.robocoin_config as robocoin_config
 import openpi.training.optimizer as _optimizer
 import openpi.training.weight_loaders as weight_loaders
 import openpi.transforms as _transforms
@@ -528,6 +528,7 @@ class TrainConfig:
 
     check_only: bool = False
     use_annotation: bool = False
+    use_indices: List[Tuple[int, int]] | None = None
 
     @property
     def assets_dirs(self) -> pathlib.Path:
@@ -964,7 +965,10 @@ _CONFIGS = [
     # RoboArena configs.
     #
     *roboarena_config.get_roboarena_configs(),
-    *realman_config.get_realman_configs(),
+    # 
+    # RoboCOIN configs.
+    # 
+    *robocoin_config.get_robocoin_configs(),
 ]
 
 if len({config.name for config in _CONFIGS}) != len(_CONFIGS):

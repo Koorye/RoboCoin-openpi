@@ -1,3 +1,7 @@
+"""
+RoboCOIN data transforms.
+"""
+
 import dataclasses
 
 import einops
@@ -6,7 +10,7 @@ import numpy as np
 from openpi import transforms
 
 
-def make_realman_example() -> dict:
+def make_robocoin_example() -> dict:
     return {
         "observation.state": np.random.rand(16),
         "observation.images.cam_high": np.random.randint(256, size=(480, 640, 3), dtype=np.uint8),
@@ -26,7 +30,10 @@ def _parse_image(image) -> np.ndarray:
 
 
 @dataclasses.dataclass(frozen=True)
-class RealmanInputs(transforms.DataTransformFn):
+class RoboCOINInputs(transforms.DataTransformFn):
+    """
+    RoboCOIN input transform.
+    """
 
     def __call__(self, data: dict) -> dict:
         base_image = _parse_image(data["observation.images.cam_high"])
@@ -56,6 +63,10 @@ class RealmanInputs(transforms.DataTransformFn):
 
 
 @dataclasses.dataclass(frozen=True)
-class RealmanOutputs(transforms.DataTransformFn):
+class RoboCOINOutputs(transforms.DataTransformFn):
+    """
+    RoboCOIN output transform.
+    """
+    
     def __call__(self, data: dict) -> dict:
         return {"action": np.asarray(data["action"][:, :16])}

@@ -1,3 +1,28 @@
+"""
+Training script.
+
+Args:
+    config_name: Name of the dataset config to use.
+    --exp-name: Name of the experiment.
+    --overwrite: Whether to overwrite existing experiment.
+    --wandb_enabled: Whether to enable Weights & Biases logging.
+    --check_only: If True, just checks the data loading and exits.
+    --use_annotation: Whether to use textual annotations for prompts.
+    --use_indices: Indices to extract from the state vector.
+
+Example:
+```bash
+XLA_PYTHON_CLIENT_MEM_FRACTION=0.9 CUDA_VISIBLE_DEVICES=0 uv run scripts/train.py \
+    pi0_robocoin \
+    --exp-name=my_experiment \
+    --overwrite \
+    --wandb-enabled [--no-wandb-enabled] \
+    --check-only [--no-check-only] \
+    --use-annotation [--no-use-annotation] \
+    --use-indices="[(0,8),(17,25)]"
+```
+"""
+
 import dataclasses
 import functools
 import logging
@@ -9,7 +34,6 @@ import flax.nnx as nnx
 from flax.training import common_utils
 import flax.traverse_util as traverse_util
 import jax
-import jax.experimental
 import jax.numpy as jnp
 import numpy as np
 import optax
@@ -163,7 +187,7 @@ def _check_batch_example(batch):
     with path.open("rb") as f:
         _tokenizer = sentencepiece.SentencePieceProcessor(model_proto=f.read())
     tokenized_prompt = np.array(observation.tokenized_prompt[0]).astype(int).tolist()
-    print('prompt:', _tokenizer.decode(tokenized_prompt).strip())
+    print('prompt: "{}"'.format(_tokenizer.decode(tokenized_prompt).strip()))
 
     plt.subplot(1, 4, 4)
     plt.plot(np.array(actions[0]))
@@ -171,6 +195,7 @@ def _check_batch_example(batch):
     plt.savefig('batch_example.png')
     print('Saved batch example to batch_example.png')
     exit()
+
 
 @at.typecheck
 def train_step(

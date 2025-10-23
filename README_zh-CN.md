@@ -1,6 +1,6 @@
 # RoboCOIN OpenPI
 
-[English](README.md) | [中文](README_zh-CN.md)
+[English](README.md) | [中文](README_zh-CN.md) | [Official OpenPI Documentation](READMD_openpi.md)
 
 > ⚠️本仓库仍在开发中，尚未接入最新的CoRobot格式⚠️
 

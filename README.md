@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README_zh-CN.md)
 
-> ⚠️⚠️⚠️ ​This repository is still under development and has not yet integrated the latest CoRobot format.​​ ⚠️⚠️⚠️
+> ⚠️ ​This repository is still under development and has not yet integrated the latest CoRobot format.​​ ⚠️
 
 
 ## Overview

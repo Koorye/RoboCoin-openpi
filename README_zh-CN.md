@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README_zh-CN.md)
 
-> ⚠️⚠️⚠️本仓库仍在开发中，尚未接入最新的CoRobot格式⚠️⚠️⚠️
+> ⚠️本仓库仍在开发中，尚未接入最新的CoRobot格式⚠️
 
 ## 概述
 
